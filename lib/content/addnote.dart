@@ -1,8 +1,7 @@
 
  import 'dart:io';
-import 'dart:math';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:path/path.dart';
+ import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path/path.dart'; 
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
@@ -29,17 +28,20 @@ class _AddnoteState extends State<Addnote> {
     if (Key_.currentState!.validate()) {
       try {
         loading = true;
-        setState(() {});
-        await note.add({
+
+        await note.doc().set({
           'title': Title.text,
           "content": Content.text,
           "color": selectedColor.value.toString() , // Save color as hex value
           "image": url1 == null ? "" : url1,
           "id": FirebaseAuth.instance.currentUser!.uid,
            "savedone":goto ,
-         },
-          );
-        
+         },);
+
+        setState(() {});
+        Navigator.pop(context);
+        Navigator.pop(context);
+
       } catch (e) {
         loading = false;
         setState(() {});
@@ -56,7 +58,7 @@ class _AddnoteState extends State<Addnote> {
 // Pick an image.
     final XFile? photo = await picker.pickImage(source: ImageSource.camera);
     if (photo != null) {
-      file = File(photo!.path);
+      file = File(photo.path);
       var imagename = basename(photo.path);
       final storageRef = FirebaseStorage.instance.ref("$imagename");
       await storageRef.putFile(file!);
