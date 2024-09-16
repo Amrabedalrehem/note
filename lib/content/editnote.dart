@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart';
@@ -14,7 +15,6 @@ class Editnote extends StatefulWidget {
   final Color color;
   final String image;
   final String id;
-  //required 
 
   const Editnote({
     super.key,
@@ -38,45 +38,44 @@ class _EditnoteState extends State<Editnote> {
     selectedColor = widget.color;
     url1 = widget.image;
   }
-  //intialization of variables
 
   GlobalKey<FormState> Key_ = GlobalKey();
   TextEditingController Title = TextEditingController();
   TextEditingController Content = TextEditingController();
   bool loading = false;
   CollectionReference note = FirebaseFirestore.instance.collection('note');
-  Color selectedColor = Colors.black; // Default color
+  Color selectedColor = Colors.black; 
   File? file;
   String? url1;
+Future UpdateUser(BuildContext context) async {
+  try {
+    await note.doc(widget.id).update({
+      'title': Title.text,
+      "content": Content.text,
+      "color": selectedColor.value.toString(),
+      "image": url1 ?? "",
+    });
 
-  Future  UpdateUser(BuildContext context) async {
-    try {
-      DocumentSnapshot noteSnapshot = await note.doc(widget.id).get();
-      if (noteSnapshot.exists) {
-        await note.doc(widget.id).update({
-          'title': Title.text,
-          "content": Content.text,
-          "color": selectedColor.value.toString(), // Save color as hex value
-          "image": url1 ?? "",
-          "savedone": true,
-          'id': widget.id,
-        });
-       
-        AwesomeDialog(
-          context: context,
-          dialogType: DialogType.success,
-          animType: AnimType.rightSlide,
-          title: 'Success Saving',
-          desc: 'Your changes saved successfully',
-        ).show();
-            Navigator.pop(context);
-      } else {
-        print("Note with ID ${widget.id} does not exist");
-      }
-    } catch (e) {
-      print("Error updating note: $e");
-    }
+
+    AwesomeDialog(
+      context: context,
+      dialogType: DialogType.success,
+      animType: AnimType.rightSlide,
+      title: 'Success Saving',
+      desc: 'Your changes saved successfully',
+    ).show().then((value) async {
+   await Navigator.pushAndRemoveUntil(
+  context,
+  MaterialPageRoute(builder: (context) => const homepage()), 
+  (Route<dynamic> route) => false,
+);
+    });
+  } catch (e) {
+    log("Error updating note: $e");
   }
+}
+
+
 
   Future<void> getphoto() async {
     final ImagePicker picker = ImagePicker();
@@ -113,21 +112,21 @@ class _EditnoteState extends State<Editnote> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(Icons.image, size: 100, color: Colors.white),
-            Text("Can Edit image", style: TextStyle(color: Colors.white, fontSize: 25)),
+            const Icon(Icons.image, size: 100, color: Colors.white),
+            const Text("Can Edit image", style: TextStyle(color: Colors.white, fontSize: 25)),
             IconButton(
               onPressed: getphoto,
-              icon: Icon(Icons.add),
+              icon: const Icon(Icons.add),
               color: Colors.white,
             )
           ],
         ),
       ),
-      backgroundColor: selectedColor, // Set background color
+      backgroundColor: selectedColor,
       appBar: AppBar(
         backgroundColor: selectedColor,
         
-        actionsIconTheme: IconThemeData(color: Colors.white),
+        actionsIconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
             onPressed: () {
@@ -135,13 +134,13 @@ class _EditnoteState extends State<Editnote> {
                 context: context,
                 builder: (BuildContext context) {
                   return AlertDialog(
-                    title: Text('Select Color'),
+                    title: const Text('Select Color'),
                     content: SingleChildScrollView(
                       child: ColorPicker(
                         pickerColor: selectedColor,
                         onColorChanged: (color) {
                           setState(() {
-                            selectedColor = color; // Update the selected color
+                            selectedColor = color; 
                           });
                         },
                         showLabel: true,
@@ -150,7 +149,7 @@ class _EditnoteState extends State<Editnote> {
                     ),
                     actions: <Widget>[
                       TextButton(
-                        child: Text('OK'),
+                        child: const Text('OK'),
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
@@ -194,32 +193,32 @@ class _EditnoteState extends State<Editnote> {
       body: Form(
         key: Key_,
         child: ListView(
-          physics: BouncingScrollPhysics(),
+          physics: const BouncingScrollPhysics(),
           children: [
             TextField(
               controller: Title,
-              style: TextStyle(color: Colors.white, fontSize: 26),
+              style: const TextStyle(color: Colors.white, fontSize: 26),
               decoration: InputDecoration(
                 hintText: "Title",
                 border: InputBorder.none,
                 hintStyle: TextStyle(color: Colors.grey[400], fontSize: 26),
-                contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                enabledBorder: OutlineInputBorder(borderSide: BorderSide.none),
-                focusedBorder: OutlineInputBorder(borderSide: BorderSide.none),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                enabledBorder: const OutlineInputBorder(borderSide: BorderSide.none),
+                focusedBorder: const OutlineInputBorder(borderSide: BorderSide.none),
               ),
             ),
                    if (url1 != null && url1 != "") Card(child: Image.network(url1!)),
             TextField(
               controller: Content,
-              style: TextStyle(color: Colors.white, fontSize: 20),
+              style: const TextStyle(color: Colors.white, fontSize: 20),
               maxLines: 100,
               decoration: InputDecoration(
                 hintText: "Type something...",
                 border: InputBorder.none,
                 hintStyle: TextStyle(color: Colors.grey[400]),
-                contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                enabledBorder: OutlineInputBorder(borderSide: BorderSide.none),
-                focusedBorder: OutlineInputBorder(borderSide: BorderSide.none),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                enabledBorder: const OutlineInputBorder(borderSide: BorderSide.none),
+                focusedBorder: const OutlineInputBorder(borderSide: BorderSide.none),
               ),
             ),
           ],
