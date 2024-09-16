@@ -15,7 +15,9 @@ class HomeSearchingnoteempty extends StatefulWidget {
 
 class _HomeSearchingnoteempty extends State<HomeSearchingnoteempty> {
   TextEditingController controller_search = TextEditingController();
-  String searchText = "";
+
+  List _list_data = [];
+  List _list_data_search = [];
 
   @override
   Widget build(BuildContext context) {
@@ -40,9 +42,7 @@ class _HomeSearchingnoteempty extends State<HomeSearchingnoteempty> {
                   icon: Icon(Icons.delete, color: Colors.white),
                   onPressed: () {
                     controller_search.clear();
-                    setState(() {
-                      searchText = "";
-                    });
+                    _list_data_search.clear();
                   },
                 ),
                 border: OutlineInputBorder(
@@ -58,11 +58,7 @@ class _HomeSearchingnoteempty extends State<HomeSearchingnoteempty> {
                   borderSide: BorderSide(color: Colors.white),
                 ),
               ),
-              onChanged: (text) {
-                setState(() {
-                  searchText = text;
-                });
-              },
+            
             ),
           ),
           SizedBox(
@@ -71,116 +67,131 @@ class _HomeSearchingnoteempty extends State<HomeSearchingnoteempty> {
           Center(
             child: IconButton(
               onPressed: () {
-                setState(() {
-                  searchText = controller_search.text;
-                 });
+                search_reports(controller_search.text.trim());
+                setState(() {});
               },
               icon: Icon(Icons.search, color: Colors.white, size: 100),
             ),
           ),
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('notes')
-                  .where('id', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
-                  .where('title', isEqualTo: searchText)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                } else if (snapshot.data!.docs.isEmpty) {
-                  return Container(
-              margin: EdgeInsets.all(20),
-              child: Center(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset("image/cuate.png", height: 160),
-                    Text("note is not found try again",
-                        style: TextStyle(color: Colors.white, fontSize: 20)),
-                  ],
-                ),
+
+
+          _list_data_search.isEmpty ? Container(
+            margin: EdgeInsets.all(20),
+            child: Center(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset("image/cuate.png", height: 160),
+                  Text("note is not found try again",
+                      style: TextStyle(color: Colors.white, fontSize: 20)),
+                ],
               ),
-            );
-                } else {
-                  return ListView.builder(
-                    itemCount: snapshot.data!.docs.length,
-                    itemBuilder: (context, index) {
-                      DocumentSnapshot doc = snapshot.data!.docs[index];
-                      return Slidable(
-                        endActionPane: ActionPane(
-                          motion: const ScrollMotion(),
-                          children: [
-                            SlidableAction(
-                              onPressed: (context) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => Editnote(
-                                      color: Color(int.parse(doc['color'])),
-                                      image: doc['image'],
-                                      id: doc.id,
-                                      title: doc['title'],
-                                      content: doc['content'],
-                                    ),
-                                  ),
-                                );
-                              },
-                              icon: Icons.edit,
-                              backgroundColor: Colors.green,
+            ),
+          ) : Expanded(
+            child: ListView.builder(
+              itemCount: _list_data_search.length,
+              itemBuilder: (context, index) {
+                DocumentSnapshot doc = _list_data_search[index];
+                return Slidable(
+                  endActionPane: ActionPane(
+                    motion: const ScrollMotion(),
+                    children: [
+                      SlidableAction(
+                        onPressed: (context) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Editnote(
+                                color: Color(int.parse(doc['color'])),
+                                image: doc['image'],
+                                id: doc.id,
+                                title: doc['title'],
+                                content: doc['content'],
+                              ),
                             ),
-                            SlidableAction(
-                              onPressed: (context) {
-                                FirebaseFirestore.instance
-                                    .collection('notes')
-                                    .doc(doc.id)
-                                    .delete();
-                              },
-                              icon: Icons.delete,
-                              backgroundColor: Colors.red,
+                          );
+                        },
+                        icon: Icons.edit,
+                        backgroundColor: Colors.green,
+                      ),
+                      SlidableAction(
+                        onPressed: (context) {
+                          FirebaseFirestore.instance
+                              .collection('notes')
+                              .doc(doc.id)
+                              .delete();
+                        },
+                        icon: Icons.delete,
+                        backgroundColor: Colors.red,
+                      ),
+                    ],
+                  ),
+                  child: Container(
+                    margin: EdgeInsets.all(20),
+                    child: Card(
+                      color: doc['color'] != "4278190080"
+                          ? Color(int.parse(doc['color']))
+                          : const Color.fromARGB(255, 18, 178, 175),
+                      child: Container(
+                        width: 400,
+                        child: Column(
+                          children: [
+                            Text(
+                              doc['title'],
+                              style: TextStyle(
+                                fontSize: 25,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              doc['content'],
+                              style: TextStyle(
+                                fontSize: 20,
+                              ),
                             ),
                           ],
                         ),
-                        child: Container(
-                          margin: EdgeInsets.all(20),
-                          child: Card(
-                            color: doc['color'] != "4278190080"
-                                ? Color(int.parse(doc['color']))
-                                : const Color.fromARGB(255, 18, 178, 175),
-                            child: Container(
-                              width: 400,
-                              child: Column(
-                                children: [
-                                  Text(
-                                    doc['title'],
-                                    style: TextStyle(
-                                      fontSize: 25,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    doc['content'],
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                }
+                      ),
+                    ),
+                  ),
+                );
               },
             ),
-          ),
+          )
         ],
       ),
     );
+  }
+
+
+  @override
+  void initState() {
+    reports_check();
+    super.initState();
+  }
+
+  reports_check() async{
+    _list_data.clear();
+    await FirebaseFirestore.instance.collection('note').where('id', isEqualTo: FirebaseAuth.instance.currentUser?.uid).get().then((val) async {
+      val.docs.map((el){
+        _list_data.add(el);
+      }).toList();
+      setState(() {
+
+      });
+
+    });
+
+  }
+
+  Future<void> search_reports(String value) async {
+    if (value.isEmpty) {
+
+      _list_data.clear();
+      _list_data_search.addAll(_list_data);
+    } else {
+      _list_data_search = _list_data.where((element) => element['title'].toLowerCase().contains(value.toLowerCase())).toList(); 
+    }
   }
 }
